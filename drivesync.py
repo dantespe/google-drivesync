@@ -17,7 +17,7 @@ SYNC = [
 ]
 
 #This is the directory of you google drive
-GOOGLE = "~/Google Drive"
+GOOGLE = "/home/dante/Google Drive"
 
 #The Folder your files will be saved under within GOOGLE drive
 COMPUTER_NAME = '/Personal Laptop/'
