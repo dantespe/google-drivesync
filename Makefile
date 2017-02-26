@@ -1,6 +1,6 @@
 test:
-	python drivesync.py
-	python dev-sync.py
+	time python drivesync.py
+	time python dev-sync.py
 
 clean:
-	rm -rf "/home/dante/Google Drive/Personal Laptop/"
+	time rm -rf "/home/dante/Google Drive/Personal Laptop/"
