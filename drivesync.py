@@ -8,11 +8,13 @@ import os
 import shutil
 import subprocess
 import datetime
-from notify import notify
+
 
 #Place the directories that you want synced
 #here. Should be absolute paths
-SYNC = []
+SYNC = [
+    '/home/dante/Documents/'
+]
 
 #This is the directory of you google drive
 GOOGLE = "~/Google Drive"
@@ -41,91 +43,85 @@ def copytree(src, dst, symlinks=False, ignore=None):
                 shutil.copy2(s, d)
 
 def make_dirs(directories):
-	dirs = []
+    dirs = []
 
-	for d in directories:
-		dirs.append(d.split('/')[3])
+    for d in directories:
+        dirs.append(d.split('/')[3])
 
-	for d in dirs:
-		temp = GOOGLE + COMPUTER_NAME + d
-
-		if not os.path.isdir(temp):
-			os.makedirs(temp)
+    for d in dirs:
+        temp = GOOGLE + COMPUTER_NAME + d
+        if not os.path.isdir(temp):
+            os.makedirs(temp)
 
 def create_logs():
-	#File is already created
-	if os.path.isfile(LOGS):
-		return
+    #File is already created
+    if os.path.isfile(LOGS):
+        return
 
-	#Parent dir but no file
-	if os.path.isdir(LOGS.split('logs.txt')[0]) and \
-		not os.path.isfile(LOGS):
-		try:
-			subprocess.call(["touch", LOGS])
-		except:
-			err = 'ERROR: File could not be made at: %s \n' % (LOGS)
-			#ERROR_MSG += err
+    #Parent dir but no file
+    if os.path.isdir(LOGS.split('logs.txt')[0]) and \
+        not os.path.isfile(LOGS):
+        try:
+            subprocess.call(["touch", LOGS])
+        except:
+            err = 'ERROR: File could not be made at: %s \n' % (LOGS)
 
-	#Needs both .Google and logs.txt
-	else:
-		try:
-			dirs = LOGS.split('logs.txt')[0]
-			dirs = dirs[:-1]
-			os.makedirs(dirs)
-		except:
-			err = 'ERROR: File could not be made at: %s' % (LOGS)
-			#ERROR_MSG += err
+    #Needs both .Google and logs.txt
+    else:
+        try:
+            dirs = LOGS.split('logs.txt')[0]
+            dirs = dirs[:-1]
+            os.makedirs(dirs)
+        except:
+            err = 'ERROR: File could not be made at: %s' % (LOGS)
 
 def migrate(directories):
-	for dirs in directories:
-		temp = os.listdir(dirs)
-		files = []
+    for dirs in directories:
+        temp = os.listdir(dirs)
+        files = []
 
-		for file in temp:
-			#Sees if file is hidden
-			if os.path.isdir(dirs + file) and file[0] != '.' \
-			 and file[0] != '~':
-				files.append(dirs + file + '/')
+        for file in temp:
+            #Sees if file is hidden
+            if os.path.isdir(dirs + file) and file[0] != '.' \
+                and file[0] != '~':
+                files.append(dirs + file + '/')
 
-			elif file[0] != '.':
-				files.append(dirs + file)
+            elif file[0] != '.':
+                files.append(dirs + file)
 
-		for file in files:
-			if os.path.isdir(file):
-				dirs = GOOGLE + COMPUTER_NAME + file.split('/')[3] + '/' + file.split('/')[4] + '/'
+        for file in files:
+            if os.path.isdir(file):
+                dirs = GOOGLE + COMPUTER_NAME + file.split('/')[3] \
+                    + '/' + file.split('/')[4] + '/'
 
-				try:
-					copytree(file, dirs)
+                try:
+                    copytree(file, dirs)
+                except:
+                    logs = open(LOGS, 'a+')
+                    date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+                    ERROR = 'ERROR syncing %s on %s' % (file, date) + '\n'
+                    logs.write(ERROR)
+                else:
+                    dirs = GOOGLE + COMPUTER_NAME + file.split('/')[3] \
+                        + '/' + file.split('/')[4]
 
-				except:
-					logs = open(LOGS, 'a+')
-					date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-					ERROR = 'ERROR syncing %s on %s' % (file, date) + '\n'
-					#ERROR_MSG += ERROR
-					logs.write(ERROR)
-
-			else:
-				dirs = GOOGLE + COMPUTER_NAME + file.split('/')[3] + '/' + file.split('/')[4]
-
-				try:
-					shutil.copy2(file, dirs)
-				except:
-					logs = open(LOGS, 'a+')
-					date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-					ERROR = 'ERROR syncing %s on %s' % (file, date) + '\n'
-					#ERROR_MSG += ERROR
-					logs.write(ERROR)
+                try:
+                    shutil.copy2(file, dirs)
+                except:
+                    logs = open(LOGS, 'a+')
+                    date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+                    ERROR = 'ERROR syncing %s on %s' % (file, date) + '\n'
+                    logs.write(ERROR)
 
 def check_logs(errors):
-	if errors != '':
-		subject = 'ERRORS with drivesync on %s' % (COMPUTER_NAME)
-		notify(CONTANCT, errors, subject=subject)
+    if errors != '':
+        subject = 'ERRORS with drivesync on %s' % (COMPUTER_NAME)
+        #notify(CONTANCT, errors, subject=subject)
 
 def main():
-	make_dirs(SYNC)
-	create_logs()
-	migrate(SYNC)
-	#check_logs(ERROR_MSG)
+    make_dirs(SYNC)
+    create_logs()
+    migrate(SYNC)
 
 if __name__ == '__main__':
 	main()
