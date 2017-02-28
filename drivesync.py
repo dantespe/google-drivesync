@@ -81,7 +81,7 @@ def migrate(directories):
         files = []
 
         for file in temp:
-            #Sees if file is hidden
+            #Sees if file 
             if os.path.isdir(dirs + file) and file[0] != '.' \
                 and file[0] != '~':
                 files.append(dirs + file + '/')
